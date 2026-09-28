@@ -16,8 +16,7 @@ So each lab here is one idea, small enough to read in one sitting, plain Python,
 | 04 | [tool registry](04-tool-registry/) | Tools become decorated functions, and a `download_pdf` tool with its guardrails in code goes and collects past papers |
 | 05 | [context management](05-context-management/) | The same agent with three policies for what gets resent each step, raced against each other on tokens and results |
 | 06 | [memory across runs](06-memory-across-runs/) | A notebook on disk that survives between runs, harness-written facts plus model-written lessons, and the ways it can poison itself |
-
-Next up are loops that run the agent on their own, on a schedule, without me pressing enter.
+| 07 | [the loop](07-the-loop/) | A runner that replaces me pressing enter: stop conditions in code, a checked `report_not_found`, a checker model that rewrites the notebook, and a log to read afterwards |
 
 ## Running
 
