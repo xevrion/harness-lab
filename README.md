@@ -14,8 +14,9 @@ So each lab here is one idea, small enough to read in one sitting, plain Python,
 | 02 | [verify step](02-verify-step/) | The harness stops taking "done" on trust and checks the workspace itself before accepting it |
 | 03 | [real model, real browser](03-real-model-browser/) | An actual LLM drives a visible Chromium through Playwright, called over plain HTTP with native tool calling |
 | 04 | [tool registry](04-tool-registry/) | Tools become decorated functions, and a `download_pdf` tool with its guardrails in code goes and collects past papers |
+| 05 | [context management](05-context-management/) | The same agent with three policies for what gets resent each step, raced against each other on tokens and results |
 
-More get added as I go: context management, and eventually loops that run agents on their own.
+More get added as I go, eventually loops that run agents on their own.
 
 ## Running
 
