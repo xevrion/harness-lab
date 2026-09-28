@@ -15,8 +15,9 @@ So each lab here is one idea, small enough to read in one sitting, plain Python,
 | 03 | [real model, real browser](03-real-model-browser/) | An actual LLM drives a visible Chromium through Playwright, called over plain HTTP with native tool calling |
 | 04 | [tool registry](04-tool-registry/) | Tools become decorated functions, and a `download_pdf` tool with its guardrails in code goes and collects past papers |
 | 05 | [context management](05-context-management/) | The same agent with three policies for what gets resent each step, raced against each other on tokens and results |
+| 06 | [memory across runs](06-memory-across-runs/) | A notebook on disk that survives between runs, harness-written facts plus model-written lessons, and the ways it can poison itself |
 
-More get added as I go, eventually loops that run agents on their own.
+Next up are loops that run the agent on their own, on a schedule, without me pressing enter.
 
 ## Running
 
