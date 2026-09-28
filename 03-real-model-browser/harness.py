@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -18,6 +19,8 @@ from playwright.sync_api import sync_playwright
 
 MAX_STEPS = 12
 MAX_ATTEMPTS = 3
+MAX_RETRIES = 4
+MAX_WAIT = 60
 DEFAULT_TASK = "Go to news.ycombinator.com and tell me the exact title of the #1 story on the front page."
 
 SYSTEM_PROMPT = (
@@ -137,24 +140,49 @@ def call_model(messages):
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json", "Authorization": f"Bearer {os.environ['LLM_API_KEY']}"},
     )
-    try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            data = json.load(r)
-    except urllib.error.HTTPError as e:
-        print(f"\nthe provider said {e.code}: {e.read().decode(errors='replace')[:500]}")
-        if e.code in (401, 403):
-            print("the key was rejected. check LLM_API_KEY in .env.")
-        elif e.code in (400, 404):
-            print("if that's about the model, the name may have changed. list what's available with:")
-            print(f'  curl -H "Authorization: Bearer <your key>" {os.environ["LLM_BASE_URL"].rstrip("/")}/models')
-        elif e.code == 429:
-            print("rate limited. free tiers allow only a few requests a minute, wait a bit and rerun.")
-        sys.exit(1)
+    for retry in range(MAX_RETRIES + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                data = json.load(r)
+            break
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode(errors="replace")
+            # Free tiers hand out a few requests a minute and providers flake with 5xx. Both clear
+            # up on their own, so waiting beats throwing away a run that was going fine.
+            if (e.code == 429 or e.code >= 500) and retry < MAX_RETRIES:
+                wait = min(retry_wait(e, error_body, retry), MAX_WAIT)
+                print(f"  {'rate limited' if e.code == 429 else f'provider error {e.code}'}, waiting {wait:.0f}s (retry {retry + 1}/{MAX_RETRIES})")
+                time.sleep(wait)
+                continue
+            report_http_error(e.code, error_body)
 
     if usage := data.get("usage"):
         print(f"  tokens: {usage.get('prompt_tokens')} in, {usage.get('completion_tokens')} out")
     return data["choices"][0]["message"]
 
+
+def retry_wait(e, error_body, retry):
+    if e.headers and (header := e.headers.get("Retry-After")):
+        try:
+            return float(header)
+        except ValueError:
+            pass
+    # Gemini puts the wait in the body instead: "Please retry in 15.28s" or "retryDelay": "15s".
+    if match := re.search(r'retry in ([\d.]+)\s*s|"retryDelay":\s*"([\d.]+)s"', error_body, re.I):
+        return float(match.group(1) or match.group(2)) + 1
+    return 2 ** (retry + 1)
+
+
+def report_http_error(code, error_body):
+    print(f"\nthe provider said {code}: {error_body[:500]}")
+    if code in (401, 403):
+        print("the key was rejected. check LLM_API_KEY in .env.")
+    elif code in (400, 404):
+        print("if that's about the model, the name may have changed. list what's available with:")
+        print(f'  curl -H "Authorization: Bearer <your key>" {os.environ["LLM_BASE_URL"].rstrip("/")}/models')
+    elif code == 429:
+        print("still rate limited after retrying. free tiers allow only a few requests a minute, wait a bit and rerun.")
+    sys.exit(1)
 
 def hn_top_title():
     req = urllib.request.Request("https://news.ycombinator.com/", headers={"User-Agent": "harness-lab"})
