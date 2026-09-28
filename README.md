@@ -11,8 +11,9 @@ So each lab here is one idea, small enough to read in one sitting, stdlib Python
 | # | Lab | The idea |
 |---|---|---|
 | 01 | [you are the model](01-you-are-the-model/) | You type the model's replies by hand into a real harness, and find out what the model does and doesn't do |
+| 02 | [verify step](02-verify-step/) | The harness stops taking "done" on trust and checks the workspace itself before accepting it |
 
-More get added as I go: the agent loop with a real model, a tool registry, context management, guardrails, and the verify step.
+More get added as I go: the agent loop with a real model, a tool registry, context management, and guardrails.
 
 ## Running
 
