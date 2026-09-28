@@ -29,6 +29,8 @@ Then put a key in `.env`. Any provider with an OpenAI-compatible API works, thes
 
 Model names change more often than you'd like. If you get a 400 or 404 about the model, ask the provider for its current list at `<base url>/models`.
 
+Free tiers are stingy (Gemini's gave me 5 requests a minute, and a single task can use more than that). When the provider says 429, the harness waits however long it was told to and tries again, up to 4 times, and those retries don't count as steps.
+
 ## Running
 
 ```
